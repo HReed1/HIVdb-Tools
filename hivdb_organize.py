@@ -47,6 +47,7 @@ def outRightMatched(DRM, line):
         return False
 
 def matched(PDRM, Pline):
+    #Matches the front of DRM  at the AA level 
     change = False
     DRM = ''
     line = ''
@@ -75,7 +76,9 @@ def matched(PDRM, Pline):
         return DRM == line
     else:
         return(Pline == PDRM)
+
 def endMatched(PDRM, Pline):
+    #Matches the back of DRM at the AA level
     change = False
     DRM = ''
     line = ''
@@ -110,7 +113,8 @@ def endMatched(PDRM, Pline):
 def DRMwrite (string, ID, IDcount, line):
     print('Writing Sample ' + str(ID[IDcount]) + ' to ' + string)
     with open(string, 'a') as f:
-        f.write(">" + ID[IDcount] + "\n" + line +'\n')
+        f.write(">" + ID[IDcount] + "\n" + line)
+
 def find(DRM,line):
     slen = 2
     endSlen = 3
@@ -138,16 +142,16 @@ def find(DRM,line):
     temp2 = endLine
     pop = 0
     snap = 0
-    print('\nStart finder\nDRM: ' + str(DRM) + '\nline: ' + str(line) + '\n')
+   # print('\nStart finder\nDRM: ' + str(DRM) + '\nline: ' + str(line) + '\n')
     while(stop == False):
         match = 0
         matchPos = []
         endMatchPos = []
         endMatch = 0
-        print('\nStart DRM: ' + str(DRM[0:3]) + ' Line: ' + str(line[0:3]))
-        print('End DRM: ' + str(endDRM[0:3]) + " Line: " + str(endLine[0:3]) + "\n")
+   #     print('\nStart DRM: ' + str(DRM[0:3]) + ' Line: ' + str(line[0:3]))
+    #    print('End DRM: ' + str(endDRM[0:3]) + " Line: " + str(endLine[0:3]) + "\n")
         if(frameShift == True and outShift == False):
-            print('FrameShift: OUT, Envoked!')
+    #        print('FrameShift: OUT, Invoked!')
             line = list(''.join(line))
             line.pop(0)
             pop += 1
@@ -155,7 +159,7 @@ def find(DRM,line):
             line = re.findall('...',(''.join(line)))
             frameShift = False
         if(frameShift == True and outShift == True):
-    #        print('FrameShift Envoked! ')
+    #        print('FrameShift Invoked! ')
             DRM = list(''.join(DRM))
             DRM.pop(0)
             pop +=1
@@ -196,7 +200,7 @@ def find(DRM,line):
                        # matchPos.append((k*3)-pop+1)
                         matchPos.append((k*3)+pop+1)
         if(backShift == True):
-    #        print('BackShift Envoked! ')
+    #        print('BackShift Invoked! ')
             endLine = list(''.join(endLine))
             endLine.pop(0)
             snap +=1
@@ -223,12 +227,9 @@ def find(DRM,line):
                     snap = 0
                     endLine = temp2
                     outBackShift = True
-           # else:
-           #     print('OUTEND -- ' +str(-1*((e*3) - len(''.join(endLine)))) +str(endDRM[0:endSlen]) +' ' + str(endLine[e:(e+endSlen)]) +' ' +str(e))
         if(outRightEndMatch == False and outBackShift == True):
     #        print('Section: Back Match')
             for j in range(length):
-        #           if(matched(endDRM[-(j+slen):(j-1)],endLine[-slen:])):
                     if(endMatched(endDRM[0:endSlen],endLine[j:(j+endSlen)])):
                         endMatchPos = []
                         endMatch += 1
@@ -283,11 +284,13 @@ def find(DRM,line):
   
     return truthSeeker
 ##################TRUTHSEEKER###########################
-#[0] = Front Match, Boolean
-#[1] = Back Match, Boolean
-#[2] = Front Match EndPos, int, -1 == no match
-#[3] = Back Match EndPos, int, -1 == no match
-##########################################################
+#[0] = Front Match, Boolean                            #
+#[1] = Back Match, Boolean                             #
+#[2] = Front Match EndPos, int, -1 == no match         #
+#[3] = Back Match EndPos, int, -1 == no match          #
+#[4] = OutRightFront Match EndPos, int, -1 == no match #
+#[5] = OutRightEnd Match EndPos, int, -1 == no match   #
+########################################################
 
 #MAIN
 PR=['CCTCAGGTCACTCTTTGGCAACGACCCCTCGTCACAATAAAGATAGGGGGGCAACTAAAGGAAGCTCTATTAGATACAGGAGCAGATGATACAGTATTAGAAGAAATGAGTTTGCCAGGAAGATGGAAACCAAAAATGATAGGGGGAATTGGAGGTTTTATCAAAGTAAGACAGTATGATCAGATACTCATAGAAATCTGTGGACATAAAGCTATAGGTACAGTATTAGTAGGACCTACACCTGTCAACATAATTGGAAGAAATCTGTTGACTCAGATTGGTTGCACTTTAAATTTT']
@@ -309,12 +312,9 @@ temp2 = ''
 PR = ''.join(PR)
 RT = ''.join(RT)
 IN = ''.join(IN)
-print("LMOOOM\n")
 with open(fast, 'r') as f:
     for line in f:
-        if(isMatched == True):   #####ORig
-      #  if(isMatched == True and ID[IDcount] == 'PL-40_S8_L001_R1-2_001_cons-20'): #####Test 
-    #        print('line: ' + line)
+        if(isMatched == True):   
             print('\n---------------' + ID[IDcount] + '---------------\n')
             RTforward = False
             PRmatched = find(PR, list(line))
@@ -324,18 +324,19 @@ with open(fast, 'r') as f:
             INmatched = find(IN, list(line))
             print('INmatched: ' + str(INmatched))
             temp = line
-            if(PRmatched[0] == True and PRmatched[1] == True and (PRmatched[3]-PRmatched[2]) > 150):	#If  matched PR...
+            
+            #If PR is truly matched...
+            if(PRmatched[0] == True and PRmatched[1] == True and (PRmatched[3]-PRmatched[2]) > 150):
                 if(RTmatched[4] != -1):
-                    print('beforeeee ' + str(PRmatched[3]))
+                #Checks for and corrects PR/RT overlap
                     PRmatched[3] = (PRmatched[3]+(RTmatched[4]-PRmatched[3]))
-                    print('Afterrrrr ' + str(PRmatched[3]))
-                print('Jamboonie. ' + str(PRmatched[2]) + ' . ' + str(PRmatched[3]))
+#                print('PR COORD ' + str(PRmatched[2]) + ':' + str(PRmatched[3]))
                 line = line[PRmatched[2]:PRmatched[3]]
                 DRMwrite('AllPR.fasta', ID, IDcount, line)
-                print('\nRTforward ' + str(RTforward))
-#                print('Writing PR')
-      #          line = temp #Regain Original line
-                line = temp[(PRmatched[3]):] #Line is from PRend to end of line
+                #print('\nRTforward ' + str(RTforward))
+                line = temp[(PRmatched[3]):] 
+     
+                #If PR matched & RT OutRightEndMatch & no IN StartMatch. Assume IN starts after RT.   
                 if(RTmatched[5] != -1 and INmatched[0] == False):
                     line = temp[PRmatched[3]:RTmatched[5]]
                     DRMwrite('AllRT.fasta',ID,IDcount,line)
@@ -348,17 +349,20 @@ with open(fast, 'r') as f:
                     line = temp
                     DRMwrite('AllReigons.fasta',ID,IDcount,line)
                     RTforward = True
-                    print('IT HAPPENED')
-                RTmatched = find(RT, list(line)) #OUTRIGHTMATCH RT, EVEN IF THE END CANNOT BE FOUND IT CAN STILL BE USEFULL
-                INmatched = find(IN,list(line)) ############ FROM HERE ON OUT USE TEMP2 ###################
+                    #print('First Loop Easy Match')
+
+                #Regain Line for More Searches. 
+                RTmatched = find(RT, list(line)) 
+                INmatched = find(IN,list(line)) 
+                
+                #If PR and IN is are  matched...
                 if(INmatched[0] == True and INmatched[1] == True):
                     temp2 = line #temp 2 saves the PRend-to-end line
                     line = temp2[INmatched[2]:] #Only capturing IN
                     DRMwrite('AllIN.fasta', ID, IDcount, line)
-#                    line = temp2 #regain PRend-to-end
-                    line = temp2[:INmatched[2]]                  ################MAJOR################### Make sure to add in length checks, to prevent index errors0
-                    print('\nRT COORD: ' + str(PRmatched[3]) + ':' + str(INmatched[2]) + '\n')
-                    print(line)
+                    line = temp2[:INmatched[2]]
+                    #RT is Between PR and IN 
+  #                  print('\nRT COORD: ' + str(PRmatched[3]) + ':' + str(INmatched[2]) + '\n')
                     DRMwrite('AllRT.fasta', ID, IDcount, line)
                     line = temp[:(INmatched[2]+PRmatched[3])]
                     DRMwrite('AllPR_RT.fasta', ID, IDcount, line)
@@ -366,14 +370,16 @@ with open(fast, 'r') as f:
                     DRMwrite('AllRT_IN.fasta', ID, IDcount, line)
                     line = temp #Regain original full line
                     DRMwrite('AllReigons.fasta', ID, IDcount, line)
+
+                #If PR but not IN is matched...The rest is RT
                 elif(RTforward == False):
-                    print('**+')
                     line = temp[(PRmatched[3]):]
-                    print('\nRT COORD: ' + str(PRmatched[3]) + ": (To the End)\n") 
-                    print(line)
+   #                 print('\nRT COORD: ' + str(PRmatched[3]) + ": (To the End)") 
                     DRMwrite('AllRT.fasta',ID,IDcount,line)
                     line = temp
                     DRMwrite('AllPR_RT.fasta',ID,IDcount,line)
+
+            #If PR no match & RT OutRightEndMatch....The rest is IN
             elif(RTmatched[5] != -1 and INmatched[0] == False):
                     line = temp[:RTmatched[5]]
                     DRMwrite('AllRT.fasta',ID,IDcount,line)
@@ -382,24 +388,28 @@ with open(fast, 'r') as f:
                     line = temp
                     DRMwrite('AllRT_IN.fasta',ID,IDcount,line)
                     RTforward = True
-                    print('YO WTF')
+
+            #IF PR no match & IN matches.... 
             elif(INmatched[0] == True and INmatched[1] == True and (INmatched[3] -INmatched[2] > 800)):
                 line = temp
                 line = line[INmatched[2]:]
                 DRMwrite('AllIN.fasta',ID,IDcount,line)
+
+                #IF RT matches
                 if(RTmatched[0] == True and RTmatched[1] == True):
                     line = temp
                     line = temp[:INmatched[2]]
-                    print('\nRT COORD: (from begining) : ' + str(INmatched[2]) + '\n')
-                    print(line)
+    #                print('\nRT COORD: 0:' + str(INmatched[2]) + '\n')
                     DRMwrite('AllRT.fasta',ID,IDcount,line)
                     line = temp
                     DRMwrite('AllRT_IN.fasta',ID,IDcount,line)
-            elif(RTforward ==False):
-                print('\nRT COORD: (The Whole THing)')
-                print(line)
+
+            #IF PR and IN have not Matched....the whole thing is RT
+            elif(RTforward == False):
                 DRMwrite('AllRT.fasta',ID,IDcount,line)
-            isMatched = False
+            #Pushes forward the next sample or ends the program.
+            isMatched = False 
+
         if(isMatched == False):
             it = re.finditer(r"^>(.+)", line)
             for match in it:
