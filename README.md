@@ -48,7 +48,7 @@ AllRT_IN.fasta
 AllReigons.fasta
 ```
 
-##hivdb_extract.py
+## hivdb_extract.py
 Using a [HyDRA](https://hydra.canada.ca/)  Mutation-Report file, this program extracts AA mutations and separates them into individual files for input into the [Stanford HIVdb Program](https://hivdb.stanford.edu/hivdb/by-mutations/).
 
 ### Getting Started:
